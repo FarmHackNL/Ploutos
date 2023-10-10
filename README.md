@@ -28,3 +28,6 @@ docker compose logs -f asking-kb
 
 You should see some data in the logs.
 That means it works!   
+
+
+
