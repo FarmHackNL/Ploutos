@@ -1,0 +1,36 @@
+services:
+  pie:
+    image: ghcr.io/tno/knowledge-engine/smart-connector:1.2.1
+    ports:
+      - "8000:8280"
+  machine-data-km:
+    build: ./machine-data-km
+    environment:
+      KE_ENDPOINT: http://pie:8280/rest
+      TREKKER_DATA_ENDPOINT: https://api.trekkerdata.nl/v1
+      TREKKER_DATA_API_KEY:
+    depends_on:
+      - pie
+  asking-kb:
+    build: ./asking-kb
+    environment:
+      KE_URL: http://pie:8280/rest
+      KB_ID: http://example.org/kb-that-asks-for-agronomic-activity
+      PREFIXES: |
+        {
+          "ploutos": "https://www.tno.nl/agrifood/ontology/ploutos/common#",
+          "rdfs": "http://www.w3.org/2000/01/rdf-schema#"
+        }
+      GRAPH_PATTERN: |
+        ?farm ploutos:hasParcel ?parcel .
+        ?operation a ?operationType .
+        ?operationType rdfs:subClassOf ploutos:Operation .
+        ?operation ploutos:isOperatedOn ?parcel .
+        ?operation ploutos:hasStartDatetime ?start .
+        ?operation ploutos:hasEndDatetime ?end .
+    depends_on:
+      - pie
+  dashboard:
+    build: ./dashboard
+    ports:
+      - "8080:80"
